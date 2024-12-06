@@ -1,9 +1,9 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-require("dotenv").config();
+import * as dotenv from "dotenv";
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.18", // Ensure the version is correct
+  solidity: "0.8.20", // Ensure the version is correct
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
