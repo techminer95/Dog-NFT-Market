@@ -12,7 +12,7 @@ if (!key || !secret) {
 }
 
 interface IPFSResponse {
-  success: boolean;
+  success: boolean; 
   pinataURL?: string;
   message?: string;
 }
