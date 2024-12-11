@@ -53,14 +53,14 @@ export default function SellNFT() {
         try {
             // Set loading message
             setMessage("Uploading files... please don't click anything!");
-
+            
             // Upload the image to IPFS
             const fileResponse = await uploadFileToIPFS(image);
             if (!fileResponse.success) {
                 throw new Error("Failed to upload file to IPFS");
             }
 
-            setFileURL(fileResponse.pinataURL);
+            await setFileURL(fileResponse.pinataURL);
 
             // Upload metadata to IPFS
             const metadataURL = await uploadMetadataToIPFS();
@@ -75,7 +75,7 @@ export default function SellNFT() {
             const contract = new ethers.Contract(Marketplace.address, Marketplace.abi, signer);
             
             // Convert price to Wei
-            const priceInWei = ethers.utils.parseEther("1.0");
+            const priceInWei = ethers.parseEther(price);
             // Fetch listing price
             const listingPrice = (await contract.getListPrice()).toString();
 

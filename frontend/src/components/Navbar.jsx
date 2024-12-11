@@ -69,6 +69,7 @@ function Navbar() {
         </ul>
       </nav>
       <div className="text-white font-bold text-right mr-10 text-sm">
+        {currentAddress}
         {error}
       </div>
     </div>
