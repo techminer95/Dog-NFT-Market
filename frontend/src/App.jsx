@@ -1,9 +1,8 @@
 import './App.css';
 import MarketPlace from "./components/Marketplace";
-import Navbar from "./components/Navbar";
 import NFTPage from "./components/NFTpage";
 import Profile from "./components/Profile";
-import SellNFT from "./components/SellNFT";
+import CreateNFT from "./components/CreateNFT";
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,11 +13,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Navbar/>
-        <Route path='/' element={MarketPlace}/>
-        <Route path='/nftPage' element={NFTPage}/>
-        <Route path='/profile' element={Profile}/>
-        <Route path='/SellNFT' element={SellNFT}/>
+        <Route path='/' element={<MarketPlace/>}/>
+        <Route path='/nftPage' element={<NFTPage/>}/>
+        <Route path='/profile' element={<Profile/>}/>
+        <Route path='/CreateNFT' element={<CreateNFT/>}/>
       </Routes>
     </Router>
   )
