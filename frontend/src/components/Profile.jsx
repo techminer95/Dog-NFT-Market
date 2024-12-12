@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import Marketplace from "../Marketplace.json";
 import axios from "axios";
 import { ethers } from "ethers";
@@ -12,53 +11,51 @@ export default function Profile() {
     const [balanceInEther, setBalanceInEther] = useState("");
 
     useEffect(() => {
-        getProfile();
-    }, []); // Runs only once on component mount
+        const initializeProfile = async () => {
+            try {
+                const provider = new ethers.BrowserProvider(window.ethereum);
 
-    const getProfile = async () => {
-        try {
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            // Request user accounts and set the first account
-            const accounts = await provider.send("eth_requestAccounts", []);
-            const userAddress = accounts[0];
-            setAddress(userAddress);
-            // Fetch wallet balance
-            const balance = await provider.getBalance(userAddress);
-            setBalanceInEther(ethers.formatEther(balance));
+                // Request accounts and fetch the first one
+                const [userAddress] = await provider.send("eth_requestAccounts", []);
+                setAddress(userAddress);
 
-            // Initialize contract
-            const contract = new ethers.Contract(Marketplace.address, Marketplace.abi, provider); 
+                // Fetch wallet balance
+                const balance = await provider.getBalance(userAddress);
+                setBalanceInEther(ethers.formatEther(balance));
 
-            // Fetch user NFTs
-            const myNFTs = await contract.getMyNFTs();
-            let sumPrice = 0;
-            // Fetch metadata for each NFT
-            const items = await Promise.all(
-                myNFTs.map(async (nft) => {
-                    const tokenURI = await contract.tokenURI(nft.tokenId);
-                    const meta = (await axios.get(tokenURI)).data;
+                // Initialize contract and fetch user NFTs
+                const contract = new ethers.Contract(Marketplace.address, Marketplace.abi, provider);
+                const myNFTs = await contract.getMyNFTs();
 
-                    const price = ethers.formatUnits(nft.price.toString(), "ether");
-                    sumPrice += parseFloat(price);
+                // Fetch metadata and calculate total price
+                const items = await Promise.all(
+                    myNFTs.map(async (nft) => {
+                        const tokenURI = await contract.tokenURI(nft.tokenId);
+                        const { image, name, desc } = (await axios.get(tokenURI)).data;
+                        const price = parseFloat(ethers.formatUnits(nft.price.toString(), "ether"));
 
-                    return {
-                        price,
-                        tokenId: nft.tokenId,
-                        seller: nft.seller,
-                        owner: nft.owner,
-                        image: meta.image,
-                        name: meta.name,
-                        desc: meta.desc,
-                    };
-                })
-            );
+                        return {
+                            price,
+                            tokenId: nft.tokenId,
+                            seller: nft.seller,
+                            owner: nft.owner,
+                            image,
+                            name,
+                            desc,
+                        };
+                    })
+                );
 
-            setData(items);
-            setTotalPrice(sumPrice.toFixed(3)); // Format to 3 decimal places
-        } catch (error) {
-            console.error("Error fetching profile data:", error);
-        }
-    };
+                const totalPrice = items.reduce((sum, item) => sum + item.price, 0).toFixed(3);
+                setData(items);
+                setTotalPrice(totalPrice);
+            } catch (error) {
+                console.error("Error fetching profile data:", error);
+            }
+        };
+
+        initializeProfile();
+    }, []);
 
     return (
         <div className="profileClass" style={{ minHeight: "100vh" }}>
@@ -87,11 +84,11 @@ export default function Profile() {
                     <h2 className="font-bold">Your NFTs</h2>
                     <div className="flex justify-center flex-wrap max-w-screen-xl">
                         {data.length > 0 ? (
-                            data.map((value, index) => (
-                                <NFTTile data={value} key={index} />
-                            ))
+                            data.map((nft, index) => <NFTTile data={nft} key={index} />)
                         ) : (
-                            <div className="mt-10 text-xl">Oops, No NFT data to display (Are you logged in?)</div>
+                            <div className="mt-10 text-xl">
+                                Oops, No NFT data to display (Are you logged in?)
+                            </div>
                         )}
                     </div>
                 </div>

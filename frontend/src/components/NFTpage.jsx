@@ -1,4 +1,4 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
@@ -7,16 +7,16 @@ import { ethers } from "ethers";
 
 export default function NFTPage() {
   const { tokenId } = useParams(); // Extract the tokenId from the URL
-  const [data, setData] = useState({});
-  const [dataFetched, setDataFetched] = useState(false);
+  const [data, setData] = useState(null);
+  const [currAddress, setCurrAddress] = useState(null);
   const [message, setMessage] = useState("");
-  const [currAddress, setCurrAddress] = useState("0x");
 
-  const getNFTData = async (tokenId) => {
+  const fetchNFTData = async () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
       const address = accounts[0];
+
       const contract = new ethers.Contract(
         MarketplaceJSON.address,
         MarketplaceJSON.abi,
@@ -29,7 +29,7 @@ export default function NFTPage() {
 
       const item = {
         price: ethers.formatUnits(listedToken.price.toString(), "ether"),
-        tokenId: tokenId,
+        tokenId,
         seller: listedToken.seller,
         owner: listedToken.owner,
         image: meta.image,
@@ -39,22 +39,22 @@ export default function NFTPage() {
 
       setData(item);
       setCurrAddress(address);
-      setDataFetched(true);
-    } catch (e) {
-      console.error("Error fetching NFT data:", e);
+    } catch (error) {
+      console.error("Error fetching NFT data:", error);
     }
   };
 
   useEffect(() => {
-    if (!dataFetched) {
-      getNFTData(tokenId); // Fetch the NFT data when the component is mounted
-    }
-  }, [dataFetched, tokenId]);
+    fetchNFTData();
+  }, [tokenId]);
 
-  const buyNFT = async (tokenId) => {
+  const buyNFT = async () => {
+    if (!data) return;
+
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
+      const signer = provider.getSigner();
+
       const contract = new ethers.Contract(
         MarketplaceJSON.address,
         MarketplaceJSON.abi,
@@ -67,34 +67,36 @@ export default function NFTPage() {
 
       alert("You successfully bought the NFT!");
       setMessage("");
-    } catch (e) {
-      console.error("Purchase Error:", e);
+      fetchNFTData(); // Refresh data after purchase
+    } catch (error) {
+      console.error("Purchase Error:", error);
       alert("There was an error with the purchase.");
     }
   };
 
+  if (!data) {
+    return <div className="text-center text-white">Loading NFT data...</div>;
+  }
+
+  const { image, name, desc, price, owner, seller } = data;
+
   return (
     <div style={{ minHeight: "100vh" }}>
-
       <div className="flex ml-20 mt-20">
-        <img src={GetIpfsUrlFromPinata(data.image)} alt={data.name} className="w-2/5" />
+        <img src={GetIpfsUrlFromPinata(image)} alt={name} className="w-2/5" />
+
         <div className="text-xl ml-20 space-y-8 text-white shadow-2xl rounded-lg border-2 p-5">
-          <div>Name: {data.name}</div>
-          <div>Description: {data.desc}</div>
+          <div>Name: {name}</div>
+          <div>Description: {desc}</div>
+          <div>Price: <span>{price} ETH</span></div>
+          <div>Owner: <span className="text-sm">{owner}</span></div>
+          <div>Seller: <span className="text-sm">{seller}</span></div>
+
           <div>
-            Price: <span>{data.price} ETH</span>
-          </div>
-          <div>
-            Owner: <span className="text-sm">{data.owner}</span>
-          </div>
-          <div>
-            Seller: <span className="text-sm">{data.seller}</span>
-          </div>
-          <div>
-            {currAddress !== data.owner && currAddress !== data.seller ? (
+            {currAddress && currAddress !== owner && currAddress !== seller ? (
               <button
                 className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                onClick={() => buyNFT(tokenId)}
+                onClick={buyNFT}
               >
                 Buy this NFT
               </button>
@@ -102,7 +104,8 @@ export default function NFTPage() {
               <div className="text-emerald-700">You are the owner of this NFT</div>
             )}
           </div>
-          <div className="text-green text-center mt-3">{message}</div>
+
+          {message && <div className="text-green text-center mt-3">{message}</div>}
         </div>
       </div>
     </div>
