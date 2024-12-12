@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Navbar from "./Navbar";
+
 import Marketplace from "../Marketplace.json";
 import axios from "axios";
 import { ethers } from "ethers";
@@ -18,23 +18,20 @@ export default function Profile() {
     const getProfile = async () => {
         try {
             const provider = new ethers.BrowserProvider(window.ethereum);
-
             // Request user accounts and set the first account
             const accounts = await provider.send("eth_requestAccounts", []);
             const userAddress = accounts[0];
             setAddress(userAddress);
-
             // Fetch wallet balance
             const balance = await provider.getBalance(userAddress);
             setBalanceInEther(ethers.formatEther(balance));
 
             // Initialize contract
-            const contract = new ethers.Contract(Marketplace.address, Marketplace.abi, provider);
+            const contract = new ethers.Contract(Marketplace.address, Marketplace.abi, provider); 
 
             // Fetch user NFTs
             const myNFTs = await contract.getMyNFTs();
             let sumPrice = 0;
-
             // Fetch metadata for each NFT
             const items = await Promise.all(
                 myNFTs.map(async (nft) => {
@@ -65,7 +62,6 @@ export default function Profile() {
 
     return (
         <div className="profileClass" style={{ minHeight: "100vh" }}>
-            <Navbar />
             <div className="profileClass">
                 <div className="flex text-center flex-col mt-11 md:text-2xl text-white">
                     <div className="mb-5">
@@ -79,7 +75,7 @@ export default function Profile() {
                         {data.length}
                     </div>
                     <div className="ml-20">
-                        <h2 className="font-bold">Total Value</h2>
+                        <h2 className="font-bold">NFT Value</h2>
                         {totalPrice} ETH
                     </div>
                     <div className="ml-20">
