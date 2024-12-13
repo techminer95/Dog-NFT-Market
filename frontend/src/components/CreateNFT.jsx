@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
-import Marketplace from '../Marketplace.json';
+import Marketplace from '../../../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json';
+
 
 export default function SellNFT() {
     const [name, setName] = useState("");
@@ -68,7 +69,7 @@ export default function SellNFT() {
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
 
-            const contract = new ethers.Contract(Marketplace.address, Marketplace.abi, signer);
+            const contract = new ethers.Contract(import.meta.env.VITE_CONTRACT_ADDRESS, Marketplace.abi, signer);
 
             const priceInWei = ethers.parseEther(price);
             const listingPrice = (await contract.getListPrice()).toString();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Marketplace from "../Marketplace.json";
+import Marketplace from "../../../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json";
 import axios from "axios";
 import { ethers } from "ethers";
 import NFTTile from "./NFTTile";
@@ -24,7 +24,7 @@ export default function Profile() {
                 setBalanceInEther(ethers.formatEther(balance));
 
                 // Initialize contract and fetch user NFTs
-                const contract = new ethers.Contract(Marketplace.address, Marketplace.abi, provider);
+                const contract = new ethers.Contract(import.meta.env.VITE_CONTRACT_ADDRESS, Marketplace.abi, provider);
                 const myNFTs = await contract.getMyNFTs();
 
                 // Fetch metadata and calculate total price

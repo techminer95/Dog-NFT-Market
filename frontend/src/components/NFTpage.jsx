@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import MarketplaceJSON from "../Marketplace.json";
+import MarketplaceJSON from "../../../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json";
 import axios from "axios";
 import { GetIpfsUrlFromPinata } from "../utils";
 import { ethers } from "ethers";
+
 
 export default function NFTPage() {
   const { tokenId } = useParams(); // Extract the tokenId from the URL
@@ -18,7 +19,7 @@ export default function NFTPage() {
       const address = accounts[0];
 
       const contract = new ethers.Contract(
-        MarketplaceJSON.address,
+        import.meta.env.VITE_CONTRACT_ADDRESS,
         MarketplaceJSON.abi,
         provider
       );
@@ -53,15 +54,15 @@ export default function NFTPage() {
 
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = provider.getSigner();
+      const signer = await provider.getSigner();
 
       const contract = new ethers.Contract(
-        MarketplaceJSON.address,
+        import.meta.env.VITE_CONTRACT_ADDRESS,
         MarketplaceJSON.abi,
         signer
       );
 
-      const salePrice = ethers.parseUnits(data.price, "ether");
+      const salePrice = await ethers.parseUnits(data.price, "ether");
       const transaction = await contract.executeSale(tokenId, { value: salePrice });
       await transaction.wait();
 

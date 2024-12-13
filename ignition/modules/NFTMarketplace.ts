@@ -1,27 +1,25 @@
-
 import { ethers } from "hardhat";
-import hre from "hardhat";
-import fs from "fs";
 
 async function main() {
-    //get the signer that we will use to deploy
+    // Get the signer that we will use to deploy
     const [deployer] = await ethers.getSigners();
 
-    //Get the NFTMarketplace smart contract object and deploy it
-    const Marketplace: any = await hre.ethers.getContractFactory("NFTMarketplace");
-    const marketplace: any = await Marketplace.deploy();
+    console.log("Deployer Address:", deployer.address);
 
-    await marketplace.deployed();
+    // Fetch the ETH balance of the deployer before deploying the contract
+    const deployerBalanceBefore = await ethers.provider.getBalance(deployer.address);
+    console.log("Deployer ETH Balance Before Deployment:", ethers.formatEther(deployerBalanceBefore));
 
-    //Pull the address and ABI out while you deploy, since that will be key in interacting with the smart contract later
-    const data = {
-        address: marketplace.address,
-        abi: JSON.parse(marketplace.interface.format('json'))
-    }
+    // Get the NFTMarketplace smart contract object and deploy it
+    const Marketplace = await ethers.getContractFactory("NFTMarketplace");
+    const marketplace = await Marketplace.deploy();
 
-    //This writes the ABI and address to the marketplace.json
-    //This data is then used by frontend files to connect with the smart contract
-    fs.writeFileSync('./src/Marketplace.json', JSON.stringify(data))
+    await marketplace.waitForDeployment();
+
+    console.log("NFTMarketplace Contract Deployed At:", marketplace.target);
+
+    const deployerBalanceAfter = await ethers.provider.getBalance(deployer.address);
+    console.log("Deployer ETH Balance After Deployment:", ethers.formatEther(deployerBalanceAfter));
 }
 
 main()

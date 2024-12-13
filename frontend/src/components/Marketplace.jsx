@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import NFTTile from "./NFTTile";
-import MarketplaceJSON from "../Marketplace.json";
+import MarketplaceJSON from "../../../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json";
 import axios from "axios";
 import { GetIpfsUrlFromPinata } from "../utils";
 import { ethers } from "ethers";
+
+
 
 export default function Marketplace() {
     const [data, setData] = useState([]);
@@ -12,7 +14,7 @@ export default function Marketplace() {
         const fetchNFTs = async () => {
             try {
                 const provider = new ethers.BrowserProvider(window.ethereum);
-                const contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, provider);
+                const contract = new ethers.Contract(import.meta.env.VITE_CONTRACT_ADDRESS, MarketplaceJSON.abi, provider);
                 const transaction = await contract.getAllNFTs();
 
                 const items = await Promise.all(transaction.map(async (i) => {
